@@ -157,6 +157,26 @@ public class FilmDAO {
 	    }
 	    return result;
 	}
+   
+   public boolean deleteFilms(int id) throws SQLException {
+	    boolean result = false;
+	    try {
+	        openConnection();
+	        String sql = "DELETE FROM films WHERE id = ?";
+	        PreparedStatement stmt = conn.prepareStatement(sql);
+	        stmt.setInt(1, id);
+	        int rowsDeleted = stmt.executeUpdate();
+	        if (rowsDeleted > 0) {
+	            System.out.println("The film was deleted successfully!");
+	            result = true;
+	        }
+	        closeConnection();
+	    } catch (SQLException e) {
+	        throw new SQLException("Film not deleted, something went wrong.", e);
+	    }
+	    return result;
+	}
+
 
 
 

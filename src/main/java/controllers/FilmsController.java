@@ -17,9 +17,10 @@ import models.Film;
 /**
  * Servlet implementation class FilmsController
  */
-@WebServlet("/Films")
+@WebServlet("/")
 public class FilmsController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private FilmDAO dao;
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -28,98 +29,179 @@ public class FilmsController extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
     }
+    
+    public void init() {
+    	 dao = new FilmDAO();
+    	
+    }
+    
+    /**
+     * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+     */
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	
+    	doGet(request, response);	        
+    }  
+    
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		FilmDAO dao = new FilmDAO();
+		
+		// Retrieve the servlet path from the request object
+		String action = request.getServletPath();
+		
+
+			try {
+				
+				// Use a switch statement to determine which action to perform based on the servlet path
+				switch (action) {
+				
+				case "/insert":
+					insertFilm(request, response);
+					break;
+				
+				case "/delete":
+					deleteFilm(request, response);
+					break;
+					
+				case "/edit":
+					showEditFilms(request, response);
+					break;
+					
+				case "/update":
+					updateFilm(request, response);
+					break;
+					
+				case "/new":
+					showAddFilmJsp(request, response);
+					break;
+					
+					default:
+						// If the path is none of the above, call the showFilmList method to display a list of all the films in the database
+						showFilmList(request, response);
+						break;
+				}
+			} catch (ServletException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+	}
+	
+	private void showAddFilmJsp(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	
+		RequestDispatcher rd = request.getRequestDispatcher("AddFilms.jsp");
+		rd.forward(request, response);
+		
+	}
+	
+	
+	private void showFilmList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
 		ArrayList<Film> allFilms = dao.getAllFilms();
-		request.setAttribute("films", allFilms);
-		RequestDispatcher rd = request.getRequestDispatcher("FilmsList.jsp");
+		
+		request.setAttribute("allFilms", allFilms);
+		
+		RequestDispatcher rd = request.getRequestDispatcher("ListFilms.jsp");
+		
 		rd.forward(request, response);
 	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	    // Get the form data
-		int filmId = Integer.parseInt(request.getParameter("filmId"));
+	
+	private void insertFilm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String filmIdParam = request.getParameter("filmId");
+		//Some sysouts to check if the filmID is being passed through?
+		System.out.println("filmIdParam: " + filmIdParam);
+		int filmId = Integer.parseInt(filmIdParam);
+		
 	    String filmTitle = request.getParameter("filmTitle");
-	    int filmYear = Integer.parseInt(request.getParameter("year"));
+	    int filmYear = Integer.parseInt(request.getParameter("filmYear"));
 	    String filmDirector = request.getParameter("filmDirector");
 	    String filmStars = request.getParameter("filmStars");
-	    String filmReview = request.getParameter("filmReview");    
+	    String filmReview = request.getParameter("filmReview"); 
+	    
+    	// Create a new film object
+    	Film newFilm = new Film( filmId,  filmTitle,  filmYear,  filmDirector,  filmStars,
+    			filmReview);
+    	
+    	// Add the new film to the database
+    	try {
+    		dao.insertFilm(newFilm);
+    		response.sendRedirect("films");
+    	} catch (SQLException e) {
+    		e.printStackTrace();
+    	}
 
-	        // Create a new DAO object to apply its method
-	        FilmDAO dao = new FilmDAO();
-	        
-	        if (request.getParameter("action").equals("add")) {
-	        	
-	        	if (dao.getFilmByID(filmId) != null) {
-	        		// Show error message if film with the same ID already exists
-	        		request.setAttribute("error", "Film with ID " + filmId + " already exists.");
-	        		RequestDispatcher rd = request.getRequestDispatcher("AddFilms.jsp");
-	        		rd.forward(request, response);
-	        		return;
-	        	}
-	        	
-	        	// Create a new film object
-	        	Film newFilm = new Film( filmId,  filmTitle,  filmYear,  filmDirector,  filmStars,
-	        			filmReview);
-	        	
-	        	// Add the new film to the database
-	        	try {
-	        		dao.insertFilm(newFilm);
-	        	} catch (SQLException e) {
-	        		e.printStackTrace();
-	        		// Show error message if failed to insert film into database
-	        		request.setAttribute("error", "Failed to add new film. Please try again later.");
-	        		RequestDispatcher rd = request.getRequestDispatcher("AddFilms.jsp");
-	        		rd.forward(request, response);
-	        		return;
-	        	}
-	        	
-	        	// Redirect the user to the films list page
-	        	response.sendRedirect("./Films");
-	        } else if (request.getParameter("action").equals("update")) {
-	        	
-	        	//Edit 
+	}
+	
+	
+	private void showEditFilms(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String filmIdParam = request.getParameter("id");
+		System.out.println("filmIdParam: " + filmIdParam);
+		int filmId = Integer.parseInt(filmIdParam);
 
-	        	// Get the existing film from the database
-	            Film existingFilm = dao.getFilmByID(filmId);
+		
+		Film existingFilm = dao.getFilmByID(filmId);
+		
+		RequestDispatcher rd = request.getRequestDispatcher("AddFilms.jsp");
+		
+		
+		request.setAttribute("film", existingFilm);
+		
+		rd.forward(request, response);
+		
+	}
+	
+	private void deleteFilm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String filmIdParam = request.getParameter("id");
+		System.out.println("filmIdParam: " + filmIdParam);
+		int filmId = Integer.parseInt(filmIdParam);
 
-	            // Update the existing film with the new data
-	            existingFilm.setTitle(filmTitle);
-	            existingFilm.setYear(filmYear);
-	            existingFilm.setDirector(filmDirector);
-	            existingFilm.setStars(filmStars);
-	            existingFilm.setReview(filmReview);
+		
+		
+		try {
+			dao.deleteFilms(filmId);
+			response.sendRedirect("films");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private void updateFilm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	
+		String filmIdParam = request.getParameter("id");
+		System.out.println("filmIdParam: " + filmIdParam);
+		int filmId = Integer.parseInt(filmIdParam);
+		
+	    String filmTitle = request.getParameter("filmTitle");
+	    
+	    int filmYear = Integer.parseInt(request.getParameter("filmYear"));
+	    String filmDirector = request.getParameter("filmDirector");
+	    String filmStars = request.getParameter("filmStars");
+	    String filmReview = request.getParameter("filmReview");  
+	    
+    	// Create a new film object
+    	Film editExistingFilm = new Film( filmId,  filmTitle,  filmYear,  filmDirector,  filmStars, filmReview);
+	
+    	try {
+			dao.editFilm(editExistingFilm);
+			response.sendRedirect("films");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
 
-	            // Update the film in the database
-	            try {
-	                dao.editFilm(existingFilm);
-	            } catch (SQLException e) {
-	                e.printStackTrace();
-	                // Show error message if failed to update film in database
-	                request.setAttribute("error", "Failed to update film. Please try again later.");
-	                RequestDispatcher rd = request.getRequestDispatcher("EditFilms.jsp");
-	                rd.forward(request, response);
-                return;
-	            }
-
-	            // Redirect the user to the films list page
-	            response.sendRedirect("./Films");
-	            
-	        
-	        }
-
-	        
-	        
-	        
-	}  
 	    }
 	
 

@@ -20,7 +20,8 @@ import models.Film;
 @WebServlet("/")
 public class FilmsController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private FilmDAO dao;
+
+	FilmDAO dao = new FilmDAO();
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -30,10 +31,9 @@ public class FilmsController extends HttpServlet {
         // TODO Auto-generated constructor stub
     }
     
-    public void init() {
-    	 dao = new FilmDAO();
-    	
-    }
+
+
+
     
     /**
      * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)

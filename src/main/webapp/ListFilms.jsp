@@ -59,7 +59,7 @@ $(document).ready(function() {
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ml-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="<%=request.getContextPath()%>/films">Home</a>
+          <a class="nav-link" href="<%=request.getContextPath()%>/Films">Home</a>
         </li>
       </ul>
     </div>
@@ -76,7 +76,8 @@ $(document).ready(function() {
 			<hr>
 			<div class="container text-left">
 
-				<a href="<%=request.getContextPath()%>/new" class="btn btn-success">Add New Film</a>
+				<a href="AddFilms.jsp" class="btn btn-success">Add Film</a>
+
 			</div>
 			<br>
 			<table id="film-table" class="display">
@@ -101,9 +102,13 @@ $(document).ready(function() {
                 <td><c:out value="${film.stars}" /></td>
                 <td><c:out value="${film.review}" /></td>
                 <td>
-                    <a href="edit?id=<c:out value='${film.id}' />"><span class="fa fa-edit"></span> </a>
-                    &nbsp;&nbsp;&nbsp;&nbsp; 
-                    <a href="delete?id=<c:out value='${film.id}' />"><span class="fa fa-trash"></span></a>
+                    <a href="./Edit?id=${film.id}">
+                    <span class="fa fa-edit"></span>
+                     </a>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<a href="./Delete?id=${film.id}">
+					<span class="fa fa-trash"></span>
+					</a>
                 </td>
             </tr>
         </c:forEach>
